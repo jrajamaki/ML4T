@@ -7,9 +7,14 @@ import datetime as dt
 from util import get_data, plot_data
 import math
 
-def compute_portfolio_stats(port_val, \
+def compute_portfolio_stats(prices, \
     allocs = [0.1,0.2,0.3,0.4], \
     rfr = 0.0, sf = 252.0):
+	
+	# Calculate portfolio performance
+	normalized_prices = prices / prices.ix[0]
+	alloced = normalized_prices * allocs
+	port_val = alloced.sum(axis=1)
 	
 	# Calculate daily returns
 	daily_returns = port_val / port_val.shift(1)-1
@@ -22,7 +27,6 @@ def compute_portfolio_stats(port_val, \
 	sr = math.sqrt(sf)*(adr-rfr)/sddr
 	
 	return cr, adr, sddr, sr
-	
 
 # This is the function that will be tested by the autograder
 # The student must update this code to properly implement the functionality
@@ -44,7 +48,8 @@ def assess_portfolio(sd = dt.datetime(2008,1,1), ed = dt.datetime(2009,1,1), \
 	pos_vals = alloced * sv
 	port_val = pos_vals.sum(axis=1)
 	
-	cr, adr, sddr, sr = compute_portfolio_stats(port_val, allocs, rfr, sf)
+	# Calculate statistics of the portfolio
+	cr, adr, sddr, sr = compute_portfolio_stats(prices, allocs, rfr, sf)
 	
 	# Compare daily portfolio value with SPY using a normalized plot
 	if gen_plot:
