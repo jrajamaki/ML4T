@@ -8,8 +8,8 @@ from util import get_data, plot_data
 import math
 
 def compute_portfolio_stats(prices, \
-    allocs = [0.1,0.2,0.3,0.4], \
-    rfr = 0.0, sf = 252.0):
+	allocs = [0.1,0.2,0.3,0.4], \
+	rfr = 0.0, sf = 252.0):
 	
 	# Calculate portfolio performance
 	normalized_prices = prices / prices.ix[0]
