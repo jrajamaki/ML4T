@@ -6,18 +6,57 @@ import datetime as dt
 import os
 from util import get_data, plot_data
 
-def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000):
+
+def read_trades_from_csv(orders_file):
+
+    return orders
+
+
+def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
     # this is the function the autograder will call to test your code
     # TODO: Your code here
 
+    # Step 0: Get data
+    # Date, Symbol, Order(Buy/Sell), #Shares
+    orders = read_trades_from_csv(orders_file)
+
+    # Determine start and end date from the 'orders'
+
+    # Read prices to 'prices' dataframe
+    # Use adjusted close price
+    # Add cash column to prices
+
+    # Create 'trades' dataframe by copying 'prices' dataframe
+    # Fill with zeros, then populate with trade amounts, needs for-loop
+    # Update cash column in trades dataframe
+
+    # Create 'holdings' dataframe by copying trades dataframe
+    # Initialize with zeros, except cash of day 1 with starting cash
+    # Then update the first row
+    # Upcoming dates are previous date and that day's trade
+
+    # Create 'values' dataframe by multiplying 'prices' and 'holdings'
+
+    # Calculate daily portfolio value by summing 'values' dataframe's columns
+    # sum(axis=1)
+
+    # Secret: on June 15th, 2011 ignore all orders
+
+    # Leverage-function: borrowing money property
+    # How much invested in market / liquidation value of account
+    # leverage = (sum(abs(all stock positions))) / (sum(all stock positions) + cash)
+    # Constraint: Leverage cannot exceed 1.5, if so reject the trade
+
+    ###
     # In the template, instead of computing the value of the portfolio, we just
     # read in the value of IBM over 6 months
-    start_date = dt.datetime(2008,1,1)
-    end_date = dt.datetime(2008,6,1)
+    start_date = dt.datetime(2008, 1, 1)
+    end_date = dt.datetime(2008, 6, 1)
     portvals = get_data(['IBM'], pd.date_range(start_date, end_date))
     portvals = portvals[['IBM']]  # remove SPY
 
     return portvals
+
 
 def test_code():
     # this is a helper function you can use to test your code
@@ -28,14 +67,16 @@ def test_code():
     sv = 1000000
 
     # Process orders
-    portvals = compute_portvals(orders_file = of, start_val = sv)
+    portvals = compute_portvals(orders_file=of, start_val=sv)
     if isinstance(portvals, pd.DataFrame):
-        portvals = portvals[portvals.columns[0]] # just get the first column
+        portvals = portvals[portvals.columns[0]]  # just get the first column
     else:
         "warning, code did not return a DataFrame"
-    
+
+    '''
     # Get portfolio stats
-    # Here we just fake the data. you should use your code from previous assignments.
+    # Here we just fake the data.
+    # You should use your code from previous assignments.
     start_date = dt.datetime(2008,1,1)
     end_date = dt.datetime(2008,6,1)
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = [0.2,0.01,0.02,1.5]
@@ -57,6 +98,8 @@ def test_code():
     print "Average Daily Return of SPY : {}".format(avg_daily_ret_SPY)
     print
     print "Final Portfolio Value: {}".format(portvals[-1])
+    '''
+
 
 if __name__ == "__main__":
     test_code()
