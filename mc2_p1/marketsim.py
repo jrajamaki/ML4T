@@ -34,7 +34,9 @@ def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
 
     # Create 'trades' dataframe by copying 'prices' dataframe
     # Fill with zeros, then populate with trade amounts, needs for-loop
-    trades = prices.copy() * 0
+    values = prices.copy() * 0
+    values['Cash'] = start_val
+
     for order in orders.iterrows():
         multiplier = 1
         if order[1]['Order'] == 'SELL':
@@ -42,23 +44,12 @@ def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
         date = order[0]
         stock = order[1]['Symbol']
         amount = order[1]['Shares']
-        trades.ix[date, stock] += multiplier * amount
 
-        # Update cash column in trades dataframe
-        trades.ix[date, ['Cash']] += -1 * multiplier * amount * prices.ix[date, stock]
+        values.ix[date:, stock] += multiplier * amount * prices.ix[date:, stock]
 
-    # Create 'holdings' dataframe by copying trades dataframe
-    # Initialize with zeros, except cash of day 1 with starting cash
-    # Then update the first row
-    # Upcoming dates are previous date and that day's trade
-    holdings = prices.copy() * 0
-    holdings.ix[0] = trades.ix[0]
-    holdings.ix[0, 'Cash'] += start_val
-    holdings[1:] += trades[1:]
-    holdings = holdings.cumsum()
+        # Update cash column
+        values.ix[date:, 'Cash'] += -1 * multiplier * amount * prices.ix[date, stock]
 
-    # Create 'values' dataframe by multiplying 'prices' and 'holdings'
-    values = holdings * prices
     # Calculate daily portfolio value by summing 'values' dataframe's columns
     port_val = values.sum(axis=1).to_frame()
 
@@ -102,6 +93,7 @@ def test_code():
     else:
         "warning, code did not return a DataFrame"
 
+    '''
     # Get portfolio stats
     start_date = dt.datetime.date(portvals.index[0])
     end_date = dt.datetime.date(portvals.index[-1])
@@ -128,6 +120,7 @@ def test_code():
     print "Average Daily Return of SPY : {}".format(avg_daily_ret_SPY)
     print
     print "Final Portfolio Value: {}".format(portvals[-1])
+    '''
 
 
 if __name__ == "__main__":
