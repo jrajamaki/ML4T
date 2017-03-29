@@ -1,10 +1,20 @@
 """MC2-P1: Market simulator."""
 
 import pandas as pd
-import numpy as np
 import datetime as dt
 import math
-from util import get_data, plot_data
+from util import get_data
+
+
+# Leverage-function: borrowing money property
+# How much invested in market / liquidation value of account
+def check_leverage(new_pos):
+    leverage = (new_pos[:-1].abs().sum()) / (new_pos.sum())
+
+    if abs(leverage.values) > 2:
+        return False
+
+    return True
 
 
 def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
@@ -12,9 +22,9 @@ def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
     # TODO: Your code here
 
     # Get data
-    # FORMAT: Date, Symbol, Order(Buy/Sell), #Shares
+    # FORMAT: Date, Symbol, Order(Buy/Sell), # of shares
     orders = pd.read_csv(orders_file, index_col=[0])
-    orders.sort_index()
+    orders = orders.sort_index()
 
     # Determine stock symbols, start and end date from the 'orders'
     ls_symbols = list(set(orders['Symbol'].values))
@@ -25,40 +35,43 @@ def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
     # Read prices to 'prices' dataframe, use adjusted close price
     # Automatically adds SPY to ensure correct market dates
     prices = get_data(ls_symbols, dates)
-    # SPY has to dropped if not in traded stocks
-    if 'SPY' not in ls_symbols:
-        prices.drop('SPY', axis=1, inplace=True)
 
-    # Add cash column to prices and set 1
-    prices = prices.assign(Cash=np.ones(len(prices)))
-
-    # Create 'trades' dataframe by copying 'prices' dataframe
-    # Fill with zeros, then populate with trade amounts, needs for-loop
-    values = prices.copy() * 0
-    values['Cash'] = start_val
+    # Create dataframe to follow daily positions
+    # At first no trades, thus every day only cash
+    position = pd.DataFrame(index=prices.index, columns=prices.columns)
+    position = position.fillna(0)
+    position['Cash'] = start_val
 
     for order in orders.iterrows():
         multiplier = 1
         if order[1]['Order'] == 'SELL':
             multiplier = -1
+
+        # Parsing
         date = order[0]
         stock = order[1]['Symbol']
         amount = order[1]['Shares']
+        trade_val = multiplier * amount * prices.ix[date:, stock]
 
-        values.ix[date:, stock] += multiplier * amount * prices.ix[date:, stock]
+        # Create new position
+        new_pos = position.ix[date].copy().to_frame()
+        new_pos.ix[stock] += trade_val
+        new_pos.ix['Cash'] -= trade_val
 
-        # Update cash column
-        values.ix[date:, 'Cash'] += -1 * multiplier * amount * prices.ix[date, stock]
+        # Constraint: Leverage cannot exceed 2, if so reject the trade
+        # in 2016 limit 2, in 2017 limit 1.5
+        under_leverage_limit = check_leverage(new_pos)
+        if under_leverage_limit:
+            position.ix[date:, stock] += trade_val
+            # Update cash column
+            position.ix[date:, 'Cash'] -= trade_val[date]
 
-    # Calculate daily portfolio value by summing 'values' dataframe's columns
-    port_val = values.sum(axis=1).to_frame()
+    # Calculate daily portfolio value by summing 'position' dataframe's columns
+    port_val = position.sum(axis=1).to_frame()
 
     # Secret: on June 15th, 2011 ignore all orders
+    # This has not been implemented
 
-    # Leverage-function: borrowing money property
-    # How much invested in market / liquidation value of account
-    # leverage = (sum(abs(all stock positions))) / (sum(all stock positions) + cash)
-    # Constraint: Leverage cannot exceed 1.5, if so reject the trade
     return port_val
 
 
@@ -83,7 +96,7 @@ def test_code():
     # note that during autograding his function will not be called.
     # Define input parameters
 
-    of = "./orders/orders-short.csv"
+    of = "./testcases2016/orders-12-modified.csv"
     sv = 1000000
 
     # Process orders
@@ -93,34 +106,19 @@ def test_code():
     else:
         "warning, code did not return a DataFrame"
 
-    '''
     # Get portfolio stats
     start_date = dt.datetime.date(portvals.index[0])
     end_date = dt.datetime.date(portvals.index[-1])
-    cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = compute_portfolio_stats(portvals)
+    cr, adr, stddr, sr = compute_portfolio_stats(portvals)
 
-    spy_vals = get_data(['SPY'], pd.date_range(start_date, end_date))
-    spy_vals = spy_vals[spy_vals.columns[0]]
-
-    cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = compute_portfolio_stats(spy_vals)
-
-    # Compare portfolio against $SPX
+    # Portfolio statistics
     print "Date Range: {} to {}".format(start_date, end_date)
-    print
-    print "Sharpe Ratio of Fund: {}".format(sharpe_ratio)
-    print "Sharpe Ratio of SPY : {}".format(sharpe_ratio_SPY)
-    print
-    print "Cumulative Return of Fund: {}".format(cum_ret)
-    print "Cumulative Return of SPY : {}".format(cum_ret_SPY)
-    print
-    print "Standard Deviation of Fund: {}".format(std_daily_ret)
-    print "Standard Deviation of SPY : {}".format(std_daily_ret_SPY)
-    print
-    print "Average Daily Return of Fund: {}".format(avg_daily_ret)
-    print "Average Daily Return of SPY : {}".format(avg_daily_ret_SPY)
-    print
+    print "Sharpe Ratio of Fund: {}".format(sr)
+    print "Cumulative Return of Fund: {}".format(cr)
+    print "Standard Deviation of Fund: {}".format(stddr)
+    print "Average Daily Return of Fund: {}".format(adr)
+
     print "Final Portfolio Value: {}".format(portvals[-1])
-    '''
 
 
 if __name__ == "__main__":
