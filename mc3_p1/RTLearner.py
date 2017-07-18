@@ -20,41 +20,37 @@ class RTLearner(object):
         # concatenate the data and build the random decision tree
         # as described in A. Cutler's paper in here:
         # http://www.interfacesymposia.org/I01/I2001Proceedings/ACutler/ACutler.pdf
-        data = append(dataX, dataY, axis=1)
-        self.tree = build_tree(data)
+        data = np.c_[dataX, dataY]
+        self.tree = self.build_tree(data)
+        print self.tree
 
-    def build_tree(data):
+    def build_tree(self, data):
         # recursion finishing conditions
         # case 1: 'minimum leaf size reached'
-        if data[-1].shape[0] < self.leaf_size:
-            return [-1, data[-1].mean(), -1, -1]
+        if data.shape[0] <= self.leaf_size:
+            return np.array([[-1, data[:, -1].mean(), -1, -1]])
 
         # case 2: 'all values the same'
-        if (data[-1] == data[-1, 0]).all():
-            return [-1, data[-1, 0], -1, -1]
+        if (data[:, -1] == data[0, -1]).all():
+            return np.array([[-1, data[0, -1], -1, -1]])
 
         # else further parse tree
         else:
             # select randomly feature and data range on which to split on
             # deduct Y values from the random generators's range
-            random_feature = np.random.randint(0, data.shape[1] - 1)
+            feature = np.random.randint(0, data.shape[1] - 1)
 
-            # split val is mean of two random data points
-            random_index = np.random.randint(0, data.shape[0], 2)
-            split_val = data[random_index, random_feature].mean()
+            # splitting value is mean of two random data points
+            index = np.random.randint(0, data.shape[0], 2)
+            value = data[index, feature].mean()
 
-            # random_index1 = np.random.randint(data.shape[0])
-            # random_index2 = np.random.randint(data.shape[0])
-            # split_val = (data[random_index1, random_feature] +
-            #              data[random_index2, random_feature]) / 2
-
-            # execute recursion on the left side and the right side trees
-            left_tree = build_tree(data[data[:, random_feature] <= split_val])
-            right_tree = build_tree(data[data[:, random_feature] > split_val])
+            # execute recursion on the left side and the right side
+            left_tree = self.build_tree(data[data[:, feature] <= value])
+            right_tree = self.build_tree(data[data[:, feature] > value])
 
             # build the tree
-            root = [random_feature, split_val, 1, left_tree.shape[0] + 1]
-            return append(root, left_tree, right_tree)
+            root = np.array([[feature, value, 1, left_tree.shape[0] + 1]])
+            return np.r_['0,2', root, left_tree, right_tree]
 
     def query(self, points):
         """
