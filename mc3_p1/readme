@@ -1,0 +1,10 @@
+Project details at http://quantsoftware.gatech.edu/MC3-Project-1
+
+Folder consists of following preprovided files:
+- Data/: Contains data to test learning code on.
+- LinRegLearner.py: An implementation of linear regression. You can use it as a template for implementing your learner classes.
+- testlearner.py: Helper code to test a learner class.
+
+The following files need to be implemented:
+- RTLearner.py: Random Tree machine learning algorithm.
+- BagLearner.py: Bootstrapping Aggregating machine learning algorithm.
