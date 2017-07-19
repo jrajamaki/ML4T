@@ -22,33 +22,31 @@ class RTLearner(object):
         # http://www.interfacesymposia.org/I01/I2001Proceedings/ACutler/ACutler.pdf
         data = np.c_[dataX, dataY]
         self.tree = self.build_tree(data)
-        print self.tree
 
     def build_tree(self, data):
-        # recursion finishing conditions
+        # recursion finishing
+        # case 0: 'empty data'
+        if data.shape[0] == 0:
+            return np.empty(shape=(1, 4))
+
         # case 1: 'minimum leaf size reached'
         if data.shape[0] <= self.leaf_size:
-            return np.array([[-1, data[:, -1].mean(), -1, -1]])
+            return np.array([[-1, data[:, -1].mean(), 0, 0]])
 
-        # case 2: 'all values the same'
+        # case 2: 'all values the same in the leaf'
         if (data[:, -1] == data[0, -1]).all():
-            return np.array([[-1, data[0, -1], -1, -1]])
+            return np.array([[-1, data[0, -1], 0, 0]])
 
-        # else further parse tree
         else:
-            # select randomly feature and data range on which to split on
-            # deduct Y values from the random generators's range
+            # random generation of splitting
+            # deduct Y column from the random generators's range
             feature = np.random.randint(0, data.shape[1] - 1)
-
             # splitting value is mean of two random data points
             index = np.random.randint(0, data.shape[0], 2)
             value = data[index, feature].mean()
 
-            # execute recursion on the left side and the right side
             left_tree = self.build_tree(data[data[:, feature] <= value])
             right_tree = self.build_tree(data[data[:, feature] > value])
-
-            # build the tree
             root = np.array([[feature, value, 1, left_tree.shape[0] + 1]])
             return np.r_['0,2', root, left_tree, right_tree]
 
@@ -58,7 +56,32 @@ class RTLearner(object):
         @param points: a numpy array of data to make prediction on.
         @returns the estimated values according to the saved model.
         """
-        return 0
+        # variables indexes correct leaf in preconstructed decision tree
+        # initially each data point indexes root node
+        prediction = np.zeros(points.shape[0], dtype=int)
+
+        # the features of each data point to be evaluated
+        features = self.tree[prediction, 0].astype(int)
+
+        prediction_ready = False
+        # predict until every point has reached leaf node
+        while not prediction_ready:
+
+            # values of data points at feature to be evaluated
+            values = points[np.arange(len(points)), features]
+            # splitting values of each node
+            split_value = self.tree[prediction, 1]
+            # evaluation of index whether to take right step or left step
+            next_step = (values > split_value) * 1 + 2
+
+            # update indexes
+            prediction += self.tree[prediction, next_step].astype(int)
+
+            # check termination condition
+            features = self.tree[prediction, 0].astype(int)
+            prediction_ready = np.all(self.tree[prediction, 0] == -1)
+
+        return self.tree[prediction, 1]
 
 
 if __name__ == "__main__":
