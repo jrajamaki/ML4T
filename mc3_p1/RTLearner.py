@@ -23,17 +23,26 @@ class RTLearner(object):
         data = np.c_[dataX, dataY]
         self.tree = self.build_tree(data)
 
+        # fix NaN values
+        self.tree[np.isnan(self.tree)] = dataY.mean()
+
     def build_tree(self, data):
-        # recursion finishing
-        # case 0: 'empty data'
+        # recursion finishing conditions
+        # case 0: 'no data'
         if data.shape[0] == 0:
-            return np.empty(shape=(1, 4))
+            # make a row for empty data slices and
+            # later estimate them as mean of the data
+            # not perfect but optimal enough
+            return np.array([[-1, np.NaN, 0, 0]])
+
+            # returning empty numpy array would break indexing
+            # return np.empty(shape=(0, 4))
 
         # case 1: 'minimum leaf size reached'
         if data.shape[0] <= self.leaf_size:
             return np.array([[-1, data[:, -1].mean(), 0, 0]])
 
-        # case 2: 'all values the same in the leaf'
+        # case 2: 'all values the same'
         if (data[:, -1] == data[0, -1]).all():
             return np.array([[-1, data[0, -1], 0, 0]])
 
@@ -74,7 +83,7 @@ class RTLearner(object):
             # evaluation of index whether to take right step or left step
             next_step = (values > split_value) * 1 + 2
 
-            # update indexes
+            # update indexes of predictions
             prediction += self.tree[prediction, next_step].astype(int)
 
             # check termination condition
