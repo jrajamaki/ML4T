@@ -16,43 +16,52 @@ def print_results(data_y, pred_y):
     print "corr: ", c[0, 1]
 
 
-def split_data(data):
-    # compute how much of the data is training and testing
-    train_rows = int(math.floor(0.6 * data.shape[0]))
+def rollforward_datasplit(length, no_of_splits):
+    set_length = int(math.floor(length / no_of_splits))
 
-    # separate out training and testing data
-    train_x = data[:train_rows, 0:-1]
-    train_y = data[:train_rows, -1]
-    test_x = data[train_rows:, 0:-1]
-    test_y = data[train_rows:, -1]
-
-    return train_x, train_y, test_x, test_y
+    for i in xrange(1, no_of_splits):
+        set_end = set_length * i
+        yield np.arange(0, set_end), np.arange(set_end, set_end + set_length)
 
 
 if __name__ == "__main__":
+
     if len(sys.argv) != 2:
         print "Usage: python testlearner.py <filename>"
         sys.exit(1)
+
     f = open(sys.argv[1])
     data = np.array([map(float, s.strip().split(',')) for s in f.readlines()])
-    train_x, train_y, test_x, test_y = split_data(data)
+    k_fold = 4
 
     print '-- LINEAR REGRESSION --'
-    learner = lrl.LinRegLearner(verbose=True)
-    learner.addEvidence(train_x, train_y)
-    print "In sample results"
-    pred_y = learner.query(train_x)
-    print_results(train_y, pred_y)
-    print "Out of sample results"
-    pred_y = learner.query(test_x)
-    print_results(test_y, pred_y)
+    for train, test in rollforward_datasplit(data.shape[0], k_fold):
+        train_x = data[train, 0:-1]
+        train_y = data[train, -1]
+        test_x = data[test, 0:-1]
+        test_y = data[test, -1]
+
+        learner = lrl.LinRegLearner(verbose=True)
+        learner.addEvidence(train_x, train_y)
+        print "In sample results"
+        pred_y = learner.query(train_x)
+        print_results(train_y, pred_y)
+        print "Out of sample results"
+        pred_y = learner.query(test_x)
+        print_results(test_y, pred_y)
 
     print '-- RANDOM TREE --'
-    learner = rt.RTLearner(leaf_size=1, verbose=False)
-    learner.addEvidence(train_x, train_y)
-    print "In sample results"
-    pred_y = learner.query(train_x)
-    print_results(train_y, pred_y)
-    print "Out of sample results"
-    pred_y = learner.query(test_x)
-    print_results(test_y, pred_y)
+    for train, test in rollforward_datasplit(data.shape[0], k_fold):
+        train_x = data[train, 0:-1]
+        train_y = data[train, -1]
+        test_x = data[test, 0:-1]
+        test_y = data[test, -1]
+
+        learner = rt.RTLearner(leaf_size=1, verbose=False)
+        learner.addEvidence(train_x, train_y)
+        print "In sample results"
+        pred_y = learner.query(train_x)
+        print_results(train_y, pred_y)
+        print "Out of sample results"
+        pred_y = learner.query(test_x)
+        print_results(test_y, pred_y)
