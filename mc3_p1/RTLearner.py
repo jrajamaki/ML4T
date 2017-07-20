@@ -23,28 +23,19 @@ class RTLearner(object):
         data = np.c_[dataX, dataY]
         self.tree = self.build_tree(data)
 
-        # fix NaN values
-        self.tree[np.isnan(self.tree)] = dataY.mean()
-
     def build_tree(self, data):
         # recursion finishing conditions
         # case 0: 'no data'
-        if data.shape[0] == 0:
-            # make a row for empty data slices and
-            # later estimate them as mean of the data
-            # not perfect but optimal enough
-            return np.array([[-1, np.NaN, 0, 0]])
+        if data.size == 0:
+            return np.empty(shape=(0, 0))
 
-            # returning empty numpy array would break indexing
-            # return np.empty(shape=(0, 4))
-
-        # case 1: 'minimum leaf size reached'
-        if data.shape[0] <= self.leaf_size:
-            return np.array([[-1, data[:, -1].mean(), 0, 0]])
-
-        # case 2: 'all values the same'
+        # case 1: 'all values the same'
         if (data[:, -1] == data[0, -1]).all():
             return np.array([[-1, data[0, -1], 0, 0]])
+
+        # case 2: 'minimum leaf size reached'
+        if data.shape[0] <= self.leaf_size:
+            return np.array([[-1, data[:, -1].mean(), 0, 0]])
 
         else:
             # random generation of splitting
@@ -56,7 +47,15 @@ class RTLearner(object):
 
             left_tree = self.build_tree(data[data[:, feature] <= value])
             right_tree = self.build_tree(data[data[:, feature] > value])
-            root = np.array([[feature, value, 1, left_tree.shape[0] + 1]])
+
+            # if other tree is empty, prune it
+            if left_tree.size == 0:
+                return right_tree
+            elif right_tree.size == 0:
+                return left_tree
+            else:
+                root = np.array([[feature, value, 1, left_tree.shape[0] + 1]])
+
             return np.r_['0,2', root, left_tree, right_tree]
 
     def query(self, points):
