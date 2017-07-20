@@ -1,5 +1,5 @@
 """
-Random forest learning algorithm
+Random tree machine learning algorithm
 """
 
 import numpy as np
