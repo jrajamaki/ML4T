@@ -8,11 +8,25 @@ import LinRegLearner as lrl
 import RTLearner as rt
 import sys
 
+
 def print_results(data_y, pred_y):
     rmse = math.sqrt(((data_y - pred_y) ** 2).sum() / data_y.shape[0])
     print "RMSE: ", rmse
     c = np.corrcoef(pred_y, y=data_y)
     print "corr: ", c[0, 1]
+
+
+def split_data(data):
+    # compute how much of the data is training and testing
+    train_rows = int(math.floor(0.6 * data.shape[0]))
+
+    # separate out training and testing data
+    train_x = data[:train_rows, 0:-1]
+    train_y = data[:train_rows, -1]
+    test_x = data[train_rows:, 0:-1]
+    test_y = data[train_rows:, -1]
+
+    return train_x, train_y, test_x, test_y
 
 
 if __name__ == "__main__":
@@ -21,16 +35,7 @@ if __name__ == "__main__":
         sys.exit(1)
     f = open(sys.argv[1])
     data = np.array([map(float, s.strip().split(',')) for s in f.readlines()])
-
-    # compute how much of the data is training and testing
-    train_rows = int(math.floor(0.6 * data.shape[0]))
-    test_rows = int(data.shape[0] - train_rows)
-
-    # separate out training and testing data
-    train_x = data[:train_rows, 0:-1]
-    train_y = data[:train_rows, -1]
-    test_x = data[train_rows:, 0:-1]
-    test_y = data[train_rows:, -1]
+    train_x, train_y, test_x, test_y = split_data(data)
 
     print '-- LINEAR REGRESSION --'
     learner = lrl.LinRegLearner(verbose=True)
