@@ -12,7 +12,7 @@ import QLearner as ql
 
 # print out the map
 def printmap(data):
-    print "--------------------"
+    print '--------------------'
     for row in range(0, data.shape[0]):
         for col in range(0, data.shape[1]):
             if data[row, col] == 0:  # Empty space
@@ -160,7 +160,7 @@ def test_code():
     verbose = True  # print lots of debug stuff if True
 
     # read in the map
-    filename = 'testworlds/world13.csv'
+    filename = 'testworlds/world01.csv'
     inf = open(filename)
     data = np.array([map(float, s.strip().split(','))
                      for s in inf.readlines()])
@@ -183,10 +183,10 @@ def test_code():
                           verbose=False)  # initialize the learner
     iterations = 500
     total_reward = test(data, iterations, learner, verbose)
-    print iterations, "median total_reward", total_reward
+    print "iterations", iterations, "median total_reward", total_reward
     print
     non_dyna_score = total_reward
-
+    '''
     # run dyna test #
     learner = ql.QLearner(num_states=100,
                           num_actions=4,
@@ -199,14 +199,12 @@ def test_code():
     iterations = 50
     data = originalmap.copy()
     total_reward = test(data, iterations, learner, verbose)
-    print iterations, "median total_reward", total_reward
+    print "iterations", iterations, "median total_reward", total_reward
     dyna_score = total_reward
-
-    print
-    print
+    '''
     print "results for", filename
     print "non_dyna_score:", non_dyna_score
-    print "dyna_score    :", dyna_score
+    #print "dyna_score    :", dyna_score
 
 
 if __name__ == "__main__":
