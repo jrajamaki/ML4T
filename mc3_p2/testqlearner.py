@@ -8,6 +8,7 @@ import random as rand
 import time
 import math
 import QLearner as ql
+from timeit import default_timer as timer
 
 
 # print out the map
@@ -156,11 +157,10 @@ def test(map, iterations, learner, verbose):
 
 # run the code to test a learner
 def test_code():
-
     verbose = True  # print lots of debug stuff if True
 
     # read in the map
-    filename = 'testworlds/world01.csv'
+    filename = 'testworlds/world10.csv'
     inf = open(filename)
     data = np.array([map(float, s.strip().split(','))
                      for s in inf.readlines()])
@@ -171,8 +171,9 @@ def test_code():
         printmap(data)
 
     rand.seed(5)
-
+    
     # run non-dyna test #
+    start = timer()
     learner = ql.QLearner(num_states=100,
                           num_actions=4,
                           alpha=0.2,
@@ -183,11 +184,15 @@ def test_code():
                           verbose=False)  # initialize the learner
     iterations = 500
     total_reward = test(data, iterations, learner, verbose)
+    end = timer()
+    non_dyna_time = (end - start)
+
     print "iterations", iterations, "median total_reward", total_reward
     print
     non_dyna_score = total_reward
-    '''
+
     # run dyna test #
+    start = timer()
     learner = ql.QLearner(num_states=100,
                           num_actions=4,
                           alpha=0.2,
@@ -199,12 +204,15 @@ def test_code():
     iterations = 50
     data = originalmap.copy()
     total_reward = test(data, iterations, learner, verbose)
+    end = timer()
+    dyna_time = (end - start)
+
     print "iterations", iterations, "median total_reward", total_reward
     dyna_score = total_reward
-    '''
+
     print "results for", filename
-    print "non_dyna_score:", non_dyna_score
-    #print "dyna_score    :", dyna_score
+    print "non_dyna_score:", non_dyna_score, "non_dyna_time", non_dyna_time
+    print "dyna_score    :", dyna_score, 'dyna_time:       ', dyna_time
 
 
 if __name__ == "__main__":
