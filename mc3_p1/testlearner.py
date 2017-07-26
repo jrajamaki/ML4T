@@ -1,5 +1,6 @@
 """
-Test a learner.  (c) 2015 Tucker Balch
+Test a learner.  originally (c) 2015 Tucker Balch
+but significant changes were made
 """
 
 import numpy as np
@@ -10,11 +11,22 @@ import BagLearner as bl
 import sys
 
 
-def print_results(data_y, pred_y):
+def print_results(in_sample_results, out_of_sample_results):
+    in_sample_results = np.array(in_sample_results)
+    print "In sample results",
+    print "RMSE: {:f}".format(in_sample_results[:, 0].mean()),
+    print "corr: {:f}".format(in_sample_results[:, 1].mean()),
+
+    out_of_sample_results = np.array(out_of_sample_results)
+    print "Out of sample results",
+    print "RMSE: {:f}".format(out_of_sample_results[:, 0].mean()),
+    print "corr: {:f}".format(out_of_sample_results[:, 1].mean())
+
+
+def calculate_results(data_y, pred_y):
     rmse = math.sqrt(((data_y - pred_y) ** 2).sum() / data_y.shape[0])
-    print "RMSE: {:f}".format(rmse),
     c = np.corrcoef(pred_y, y=data_y)
-    print "corr: {:f}".format(c[0, 1])
+    return rmse, c[0, 1]
 
 
 def rollforward_datasplit(length, k_fold):
@@ -34,70 +46,52 @@ if __name__ == "__main__":
 
     f = open(sys.argv[1])
     data = np.array([map(float, s.strip().split(',')) for s in f.readlines()])
-    k_fold = 10
+    k_fold = 3
+    verbose = False
 
-    print '-- LINEAR REGRESSION --'
-    for train, test in rollforward_datasplit(data.shape[0], k_fold):
-        train_x = data[train, 0:-1]
-        train_y = data[train, -1]
-        test_x = data[test, 0:-1]
-        test_y = data[test, -1]
+    learners = []
 
-        learner = lrl.LinRegLearner(verbose=False)
-        learner.addEvidence(train_x, train_y)
-        print "In sample results    ",
-        pred_y = learner.query(train_x)
-        print_results(train_y, pred_y)
-        print "Out of sample results",
-        pred_y = learner.query(test_x)
-        print_results(test_y, pred_y)
+    learner = lrl.LinRegLearner
+    learner_name = 'LINEAR REGRESSION'
+    learner_kwargs = {'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
 
-    print '-- RANDOM TREE (leaf_size=1) --'
-    for train, test in rollforward_datasplit(data.shape[0], k_fold):
-        train_x = data[train, 0:-1]
-        train_y = data[train, -1]
-        test_x = data[test, 0:-1]
-        test_y = data[test, -1]
+    learner = rt.RTLearner
+    learner_name = 'RANDOM TREE'
+    learner_kwargs = {'leaf_size': 1, 'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
 
-        learner = rt.RTLearner(leaf_size=1, verbose=False)
-        learner.addEvidence(train_x, train_y)
-        print "In sample results    ",
-        pred_y = learner.query(train_x)
-        print_results(train_y, pred_y)
-        print "Out of sample results",
-        pred_y = learner.query(test_x)
-        print_results(test_y, pred_y)
+    learner = rt.RTLearner
+    learner_name = 'RANDOM TREE'
+    learner_kwargs = {'leaf_size': 50, 'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
 
-    print '-- BAGGING (bags=1, leaf_size=20) --'
-    for train, test in rollforward_datasplit(data.shape[0], k_fold):
-        train_x = data[train, 0:-1]
-        train_y = data[train, -1]
-        test_x = data[test, 0:-1]
-        test_y = data[test, -1]
+    learner = bl.BagLearner
+    learner_name = 'BAGGING'
+    learner_kwargs = {'learner': rt.RTLearner, 'kwargs': {'leaf_size': 20},
+                      'bags': 1, 'boost': False, 'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
 
-        learner = bl.BagLearner(learner=rt.RTLearner, kwargs={"leaf_size": 20},
-                                bags=1, boost=False, verbose=False)
-        learner.addEvidence(train_x, train_y)
-        print "In sample results    ",
-        pred_y = learner.query(train_x)
-        print_results(train_y, pred_y)
-        print "Out of sample results",
-        pred_y = learner.query(test_x)
-        print_results(test_y, pred_y)
+    learner = bl.BagLearner
+    learner_name = 'BAGGING (bags=20, leaf_size=20)'
+    learner_kwargs = {'learner': rt.RTLearner, 'kwargs': {'leaf_size': 20},
+                      'bags': 20, 'boost': False, 'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
 
-    print '-- BAGGING (bags=20, leaf_size=20) --'
-    for train, test in rollforward_datasplit(data.shape[0], k_fold):
-        train_x = data[train, 0:-1]
-        train_y = data[train, -1]
-        test_x = data[test, 0:-1]
-        test_y = data[test, -1]
+    for learner, name, args in learners:
+        print '-- ', name, args, ' --'
+        in_sample_results = []
+        out_of_sample_results = []
+        for train, test in rollforward_datasplit(data.shape[0], k_fold):
+            train_x = data[train, 0:-1]
+            train_y = data[train, -1]
+            test_x = data[test, 0:-1]
+            test_y = data[test, -1]
 
-        learner = bl.BagLearner(learner=rt.RTLearner, kwargs={"leaf_size": 20},
-                                bags=20, boost=False, verbose=False)
-        learner.addEvidence(train_x, train_y)
-        print "In sample results    ",
-        pred_y = learner.query(train_x)
-        print_results(train_y, pred_y)
-        print "Out of sample results",
-        pred_y = learner.query(test_x)
-        print_results(test_y, pred_y)
+            lrn = learner(**args)
+            lrn.addEvidence(train_x, train_y)
+            pred_y = lrn.query(train_x)
+            in_sample_results.append(calculate_results(train_y, pred_y))
+            pred_y = lrn.query(test_x)
+            out_of_sample_results.append(calculate_results(test_y, pred_y))
+        print_results(in_sample_results, out_of_sample_results)
