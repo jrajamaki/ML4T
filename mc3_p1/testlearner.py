@@ -84,6 +84,13 @@ if __name__ == "__main__":
                       'bags': 20, 'boost': False, 'verbose': verbose}
     learners.append((learner, learner_name, learner_kwargs))
 
+    learner = bl.BagLearner
+    learner_name = 'BAGGING'
+    learner_kwargs = {'learner': rt.RTLearner, 'kwargs': {'leaf_size': 20},
+                      'bags': 20, 'boost': True, 'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
+
+
     for learner, name, args in learners:
         print '-- ', name, args, ' --'
         in_sample_results = []
