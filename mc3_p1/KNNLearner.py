@@ -36,16 +36,21 @@ class KNNLearner(object):
         for i in range(pred_y.shape[0]):
             test_x = points[i, :]
             distances = self._calculate_distance(test_x)
-            k_smallest_index = np.argpartition(distances, self.k)
-            pred_y[i] = self.train_y[k_smallest_index[:self.k]].mean()
+            smallest_index = np.argpartition(distances, self.k)
+            pred_y[i] = self.train_y[smallest_index[:self.k]].mean()
 
         return pred_y
 
-
     def _calculate_distance(self, test_x):
+        """
+        @summary: Calculates Euclidian distance
+        @param test_x: one instance of test data
+        @returns Euclidian distance between given point and training data.
+        """
         dist = self.train_x - test_x
         dist = np.sqrt(np.power(dist, 2).sum(axis=1))
         return dist
+
 
 if __name__ == "__main__":
     print "the secret clue is 'zzyzx'"
