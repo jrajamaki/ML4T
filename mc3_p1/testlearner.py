@@ -8,6 +8,7 @@ import math
 import LinRegLearner as lrl
 import RTLearner as rt
 import BagLearner as bl
+import KNNLearner as knn
 import sys
 
 
@@ -66,6 +67,11 @@ if __name__ == "__main__":
     learner_kwargs = {'leaf_size': 50, 'verbose': verbose}
     learners.append((learner, learner_name, learner_kwargs))
 
+    learner = knn.KNNLearner
+    learner_name = 'kNN'
+    learner_kwargs = {'k': 3, 'verbose': verbose}
+    learners.append((learner, learner_name, learner_kwargs))
+
     learner = bl.BagLearner
     learner_name = 'BAGGING'
     learner_kwargs = {'learner': rt.RTLearner, 'kwargs': {'leaf_size': 20},
@@ -73,7 +79,7 @@ if __name__ == "__main__":
     learners.append((learner, learner_name, learner_kwargs))
 
     learner = bl.BagLearner
-    learner_name = 'BAGGING (bags=20, leaf_size=20)'
+    learner_name = 'BAGGING'
     learner_kwargs = {'learner': rt.RTLearner, 'kwargs': {'leaf_size': 20},
                       'bags': 20, 'boost': False, 'verbose': verbose}
     learners.append((learner, learner_name, learner_kwargs))
