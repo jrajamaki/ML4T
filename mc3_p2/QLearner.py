@@ -125,7 +125,7 @@ class QLearner(object):
         @summary: Runs optional Dyna optimisation
         """
 
-        # From within all experience tuples randomly choose 
+        # From within all experience tuples randomly choose
         # 'self.dyna' amount by index
         random_index = np.random.choice(self.dyna_model.shape[0],
                                         size=self.dyna,

@@ -5,8 +5,7 @@ Test a Q Learner in a navigation problem.  (c) 2015 Tucker Balch
 
 import numpy as np
 import random as rand
-import time
-import math
+import sys
 import QLearner as ql
 from timeit import default_timer as timer
 
@@ -157,13 +156,16 @@ def test(map, iterations, learner, verbose):
 
 # run the code to test a learner
 def test_code():
-    verbose = True  # print lots of debug stuff if True
+    verbose = False  # print lots of debug stuff if True
+
+    if len(sys.argv) != 2:
+        print "Usage: python testlearner.py <filename>"
+        sys.exit(1)
 
     # read in the map
-    filename = 'testworlds/world10.csv'
-    inf = open(filename)
-    data = np.array([map(float, s.strip().split(','))
-                     for s in inf.readlines()])
+    filename = sys.argv[1]
+    f = open(filename)
+    data = np.array([map(float, s.strip().split(',')) for s in f.readlines()])
 
     # make a copy so we can revert to the original map later
     originalmap = data.copy()
@@ -171,7 +173,7 @@ def test_code():
         printmap(data)
 
     rand.seed(5)
-    
+
     # run non-dyna test #
     start = timer()
     learner = ql.QLearner(num_states=100,
@@ -183,13 +185,9 @@ def test_code():
                           dyna=0,
                           verbose=False)  # initialize the learner
     iterations = 500
-    total_reward = test(data, iterations, learner, verbose)
+    non_dyna_score = test(data, iterations, learner, verbose)
     end = timer()
     non_dyna_time = (end - start)
-
-    print "iterations", iterations, "median total_reward", total_reward
-    print
-    non_dyna_score = total_reward
 
     # run dyna test #
     start = timer()
@@ -203,17 +201,16 @@ def test_code():
                           verbose=False)  # initialize the learner
     iterations = 50
     data = originalmap.copy()
-    total_reward = test(data, iterations, learner, verbose)
+    dyna_score = test(data, iterations, learner, verbose)
     end = timer()
     dyna_time = (end - start)
 
-    print "iterations", iterations, "median total_reward", total_reward
-    dyna_score = total_reward
-
+    print '--------------------'
     print "results for", filename
-    print "non_dyna_score:", non_dyna_score, "non_dyna_time", non_dyna_time
-    print "dyna_score    :", dyna_score, 'dyna_time:       ', dyna_time
-
+    print '{:15} {}'.format('non_dyna_score:', non_dyna_score),
+    print '{:15} {:.2f}s'.format('non_dyna_time:', non_dyna_time)
+    print '{:15} {}'.format('dyna_score:', dyna_score),
+    print '{:15} {:.2f}s'.format('dyna_time:', dyna_time)
 
 if __name__ == "__main__":
     test_code()
