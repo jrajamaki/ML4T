@@ -32,6 +32,12 @@ class LinRegLearner(object):
         """
         return (self.coefs[:-1] * points).sum(axis=1) + self.coefs[-1]
 
+    def get_info(self):
+        """
+        @summary: prints internal info about the learner.
+        """
+        return 'linear regression learner'
+
 
 if __name__ == "__main__":
     print "the secret clue is 'zzyzx'"

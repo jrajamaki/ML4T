@@ -51,6 +51,12 @@ class KNNLearner(object):
         dist = np.sqrt(np.power(dist, 2).sum(axis=1))
         return dist
 
+    def get_info(self):
+        """
+        @summary: prints internal info about the learner.
+        """
+        return 'knn learner (k={})'.format(self.k)
+
 
 if __name__ == "__main__":
     print "the secret clue is 'zzyzx'"

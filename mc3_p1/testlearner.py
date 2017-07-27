@@ -14,12 +14,12 @@ import sys
 
 def print_results(in_sample_results, out_of_sample_results):
     in_sample_results = np.array(in_sample_results)
-    print "In sample results",
+    print "in sample",
     print "RMSE: {:f}".format(in_sample_results[:, 0].mean()),
     print "corr: {:f}".format(in_sample_results[:, 1].mean()),
 
     out_of_sample_results = np.array(out_of_sample_results)
-    print "Out of sample results",
+    print "out of sample",
     print "RMSE: {:f}".format(out_of_sample_results[:, 0].mean()),
     print "corr: {:f}".format(out_of_sample_results[:, 1].mean())
 
@@ -37,6 +37,28 @@ def rollforward_datasplit(length, k_fold):
     for i in xrange(1, no_of_splits):
         set_end = set_length * i
         yield np.arange(0, set_end), np.arange(set_end, set_end + set_length)
+
+
+def test_learners(data, learners, k_fold):
+    for learner, name, args in learners:
+        lrn = learner(**args)
+        print '--', lrn.get_info(), '--'
+        in_sample_results = []
+        out_of_sample_results = []
+        
+        for train, test in rollforward_datasplit(data.shape[0], k_fold):
+            train_x = data[train, 0:-1]
+            train_y = data[train, -1]
+            test_x = data[test, 0:-1]
+            test_y = data[test, -1]
+
+            lrn.addEvidence(train_x, train_y)
+            pred_y = lrn.query(train_x)
+            in_sample_results.append(calculate_results(train_y, pred_y))
+            pred_y = lrn.query(test_x)
+            out_of_sample_results.append(calculate_results(test_y, pred_y))
+
+            print_results(in_sample_results, out_of_sample_results)
 
 
 if __name__ == "__main__":
@@ -90,21 +112,4 @@ if __name__ == "__main__":
                       'bags': 20, 'boost': True, 'verbose': verbose}
     learners.append((learner, learner_name, learner_kwargs))
 
-
-    for learner, name, args in learners:
-        print '-- ', name, args, ' --'
-        in_sample_results = []
-        out_of_sample_results = []
-        for train, test in rollforward_datasplit(data.shape[0], k_fold):
-            train_x = data[train, 0:-1]
-            train_y = data[train, -1]
-            test_x = data[test, 0:-1]
-            test_y = data[test, -1]
-
-            lrn = learner(**args)
-            lrn.addEvidence(train_x, train_y)
-            pred_y = lrn.query(train_x)
-            in_sample_results.append(calculate_results(train_y, pred_y))
-            pred_y = lrn.query(test_x)
-            out_of_sample_results.append(calculate_results(test_y, pred_y))
-        print_results(in_sample_results, out_of_sample_results)
+    test_learners(data, learners, k_fold)

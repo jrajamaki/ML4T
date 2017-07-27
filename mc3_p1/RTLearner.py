@@ -91,6 +91,12 @@ class RTLearner(object):
 
         return self.tree[prediction, 1]
 
+    def get_info(self):
+        """
+        @summary: prints internal info about the learner.
+        """
+        return 'random tree learner (leaf_size={})'.format(self.leaf_size)
+
 
 if __name__ == "__main__":
     print "the secret clue is 'zzyzx'"

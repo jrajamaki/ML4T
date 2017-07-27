@@ -1,6 +1,6 @@
 """
 Bagging machine learning algorithm
-Utilises random tree algorithms
+Utilises random tree algorithm
 """
 
 import numpy as np
@@ -23,29 +23,41 @@ class BagLearner(object):
         @param data_x: X values of data to add
         @param data_y: the Y training values
         """
-        if self.boost:
-            weights = np.ones(data_y.shape[0]) / data_y.shape[0]
+        weights = np.ones(data_y.shape[0]) / data_y.shape[0]
 
-            for i in np.arange(self.bags):
+        if self.boost:
+            for i in np.arange(1, self.bags + 1):
+
+                # new bootstrap sample for current learner
                 bootstrap = np.random.choice(data_x.shape[0],
                                              size=(data_x.shape[0]),
                                              replace=True,
                                              p=weights)
 
-                self.learners[i].addEvidence(data_x[bootstrap],
-                                             data_y[bootstrap])
+                # train and predict results current and
+                # all previous learners using new bootstrap sample
+                pred_y = np.ndarray(shape=(data_y.shape[0], i))
+                for j in np.arange(i):
+                    self.learners[j].addEvidence(data_x[bootstrap],
+                                                 data_y[bootstrap])
+                    pred_y[:, j] = self.learners[j].query(data_x)
 
-                pred_y = self.learners[i].query(data_x)
+                # Calculate new weights using mean of errors
+                # and normalise them so that weigths.sum() == 1
+                pred_y = pred_y.mean(axis=1)
                 errors = self._calculate_errors(data_y, pred_y)
                 weights = errors / errors.sum()
-        else:
-            bootstrap = np.random.choice(data_x.shape[0],
-                                         size=(data_x.shape[0], self.bags),
-                                         replace=True)
 
-            for i in np.arange(self.bags):
-                self.learners[i].addEvidence(data_x[bootstrap[:, i], :],
-                                             data_y[bootstrap[:, i]])
+        # train all learners
+        # if boosting was used, sample using optimised weights
+        # if no boosting, use uniform weights
+        bootstrap = np.random.choice(data_x.shape[0],
+                                     size=(data_x.shape[0], self.bags),
+                                     replace=True, p=weights)
+
+        for i in np.arange(self.bags):
+            self.learners[i].addEvidence(data_x[bootstrap[:, i], :],
+                                         data_y[bootstrap[:, i]])
 
     def query(self, points):
         """
@@ -61,9 +73,27 @@ class BagLearner(object):
         return prediction
 
     def _calculate_errors(self, data_y, pred_y):
+        """
+        @summary: calculate means square error between data and prediction
+        @param data_y: original y values
+        @param pred_y: predictions of data
+        @returns errors for each prediction
+        """
+
         errors = data_y - pred_y
         errors = np.sqrt(np.power(errors, 2))
         return errors
+
+    def get_info(self):
+        """
+        @summary: prints internal info about the learner.
+        """
+        weak_learner = self.learners[0].get_info()
+        info = 'bag learner'
+        info += '(bags={}, learner={}, boosting={})'.format(self.bags,
+                                                            weak_learner,
+                                                            self.boost)
+        return info
 
 
 if __name__ == "__main__":
