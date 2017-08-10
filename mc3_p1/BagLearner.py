@@ -90,9 +90,9 @@ class BagLearner(object):
         """
         weak_learner = self.learners[0].get_info()
         info = 'bag learner'
-        info += '(bags={}, learner={}, boosting={})'.format(self.bags,
-                                                            weak_learner,
-                                                            self.boost)
+        info += '(bags={}, weak learner={}, boosting={})'.format(self.bags,
+                                                                 weak_learner,
+                                                                 self.boost)
         return info
 
 

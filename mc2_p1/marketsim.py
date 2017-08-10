@@ -117,7 +117,6 @@ def test_code():
     print "Cumulative Return of Fund: {}".format(cr)
     print "Standard Deviation of Fund: {}".format(stddr)
     print "Average Daily Return of Fund: {}".format(adr)
-
     print "Final Portfolio Value: {}".format(portvals[-1])
 
 
