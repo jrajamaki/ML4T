@@ -18,7 +18,6 @@ def check_leverage(new_pos):
 
 def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
     # this is the function the autograder will call to test your code
-    # TODO: Your code here
 
     # Get data
     # FORMAT: Date, Symbol, Order(Buy/Sell), # of shares
@@ -51,11 +50,6 @@ def compute_portvals(orders_file="./orders/orders.csv", start_val=1000000):
         stock = order[1]['Symbol']
         amount = order[1]['Shares']
         trade_val = multiplier * amount * prices.ix[date:, stock]
-
-        # Create new position
-        new_pos = position.ix[date].copy().to_frame()
-        new_pos.ix[stock] += trade_val
-        new_pos.ix['Cash'] -= trade_val
 
         # Update new position
         position.ix[date:, stock] += trade_val

@@ -3,7 +3,6 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime as dt
 import math
 import csv
 import numpy as np
@@ -141,43 +140,3 @@ def standardise_timeperiod(portfolio, start_date, end_date, initial_cash):
 
     portfolio.ffill(inplace=True)
     return portfolio
-
-'''
-def print_results(portfolio):
-    # Get portfolio stats
-    start_date = dt.datetime.date(portfolio.index[0])
-    end_date = dt.datetime.date(portfolio.index[-1])
-    cr, adr, stddr, sr, fv = compute_portfolio_stats(portfolio)
-
-    # Portfolio statistics
-    print portfolio.name, "results"
-    print "Date Range: {} to {}".format(start_date, end_date)
-    print "Sharpe Ratio: {:2.4}".format(sr)
-    print "Cumulative Return: {:2.4}%".format(cr * 100)
-    print "Standard Deviation: {:.4}".format(stddr)
-    print "Average Daily Return: {:.2}%".format(adr * 100)
-    print "Final Value: {}".format(fv)
-
-
-def plot_data(df, title="Stock prices", xlabel="Date", ylabel="Price"):
-    """Plot stock prices with a custom title and meaningful axis labels."""
-    ax = df.plot(title=title, fontsize=12)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    plt.show()    
-
-
-def save_benchmark_data(sym, start_date, end_date, output='benchmark.csv'):
-    # get data
-    dates = pd.date_range(start_date, end_date)
-    prices_all = get_data([sym], dates)  # automatically adds SPY
-    prices = prices_all[[sym]]  # only portfolio symbols
-
-    with open(output, 'wb') as file:
-        writer = csv.writer(file)
-        writer.writerow(('Date', 'Symbol', 'Order', 'Shares'))
-        start = prices.index[0]
-        end = prices.index[-1]
-        writer.writerow((start, sym, 'BUY', '200'))
-        writer.writerow((end, sym, 'SELL', '200'))
-'''
