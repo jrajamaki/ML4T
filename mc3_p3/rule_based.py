@@ -92,7 +92,6 @@ def create_rule_based_portfolio(syms, start_date, end_date,
     @param look_back: Look back period for indicator analysis
     @return rule_portfolio: Portfolio's daily value in dataframe
     @return orders: Dataframe consisting of orders for dates that have orders.
-
     """
 
     orders = run_rule_based_strategy(syms=syms,
@@ -112,7 +111,7 @@ def create_rule_based_portfolio(syms, start_date, end_date,
     return rule_portfolio, orders
 
 
-def test_code(syms, start_date, end_date, initial_cash, draw_charts=False):
+def test_code(syms, start_date, end_date, initial_cash):
 
     # benchmark, buy 200 at AAPL at initial date, sell them at ending date
     amount = 200
@@ -127,18 +126,17 @@ def test_code(syms, start_date, end_date, initial_cash, draw_charts=False):
                                                          look_back)
 
     # print information
-    if draw_charts:
-        ut.draw_charts([benchmark, rule_portfolio], orders)
+    ut.draw_charts([benchmark, rule_portfolio], orders)
 
 
 if __name__ == '__main__':
-    syms = ['AAPL', 'GOOG']
+    syms = ['AAPL']
     initial_cash = 100000
 
     start_date = dt.datetime(2008, 1, 1)
     end_date = dt.datetime(2009, 12, 31)
-    test_code(syms, start_date, end_date, initial_cash, draw_charts=True)
+    test_code(syms, start_date, end_date, initial_cash)
 
     start_date = dt.datetime(2010, 1, 1)
     end_date = dt.datetime(2011, 12, 31)
-    test_code(syms, start_date, end_date, initial_cash, draw_charts=True)
+    test_code(syms, start_date, end_date, initial_cash)
