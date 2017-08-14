@@ -14,9 +14,9 @@ def determine_optimal_orders(syms, start_date, end_date):
     """
     @summary: Given the time period determine optimal orders
               by peeking into future.
-    @param sym: Stock symbol(s) to determine optimal orders for.
-    @param start_date: The starting date from which orders are created.
-    @param end_date: The ending date for the order creation.
+    @param syms: List of Stock symbols to be included in the optimal portfolio.
+    @param start_date: Start date of trading.
+    @param end_date: End date of trading.
     @return: Dataframe consisting of optimal orders for dates that have orders.
     """
 
@@ -45,10 +45,10 @@ def determine_optimal_orders(syms, start_date, end_date):
 def create_optimal_portfolio(syms, initial_cash, start_date, end_date):
     """
     @summary: Calculates optimal portfolio's daily value
-    @param syms: Stock symbol(s) that are included in the optimal portfolio.
-    @param initial_cash: Amount of cash available to use in trading.
-    @param start_date: Starting date for order creation.
-    @param end_date: Ending date for order creation.
+    @param syms: List of Stock symbols to be included in the optimal portfolio.
+    @param initial_cash: Amount of cash available to use for trading.
+    @param start_date: Start date of trading.
+    @param end_date: End date of trading.
     @return: The optimal portfolio's daily value in Pandas dataframe
     """
     orders = determine_optimal_orders(syms=syms,
