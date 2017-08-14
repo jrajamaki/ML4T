@@ -112,7 +112,7 @@ def create_rule_based_portfolio(syms, start_date, end_date,
     return rule_portfolio, orders
 
 
-def test_code(syms, start_date, end_date, initial_cash, verbose=False):
+def test_code(syms, start_date, end_date, initial_cash, draw_charts=False):
 
     # benchmark, buy 200 at AAPL at initial date, sell them at ending date
     amount = 200
@@ -127,7 +127,7 @@ def test_code(syms, start_date, end_date, initial_cash, verbose=False):
                                                          look_back)
 
     # print information
-    if verbose:
+    if draw_charts:
         ut.draw_charts([benchmark, rule_portfolio], orders)
 
 
@@ -137,8 +137,8 @@ if __name__ == '__main__':
 
     start_date = dt.datetime(2008, 1, 1)
     end_date = dt.datetime(2009, 12, 31)
-    test_code(syms, start_date, end_date, initial_cash, verbose=True)
+    test_code(syms, start_date, end_date, initial_cash, draw_charts=True)
 
     start_date = dt.datetime(2010, 1, 1)
     end_date = dt.datetime(2011, 12, 31)
-    test_code(syms, start_date, end_date, initial_cash, verbose=True)
+    test_code(syms, start_date, end_date, initial_cash, draw_charts=True)
